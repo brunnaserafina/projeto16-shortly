@@ -44,3 +44,35 @@ export async function searchShortLink(req, res) {
     return res.sendStatus(STATUS_CODE.SERVER_ERROR);
   }
 }
+
+export async function redirectLink(req, res) {
+  const { shortUrl } = req.params;
+
+  let idUrl;
+  let link;
+
+  try {
+    const existingShortUrl = (
+      await connection.query(`SELECT * FROM links WHERE "short_url"=$1;`, [
+        shortUrl,
+      ])
+    ).rows[0];
+
+    if (!existingShortUrl) {
+      return res.sendStatus(STATUS_CODE.NOT_FOUND);
+    }
+
+    idUrl = existingShortUrl.id;
+
+    await connection.query(`INSERT INTO views ("link_id") VALUES ($1);`, [
+      idUrl,
+    ]);
+
+    link = existingShortUrl.link_url;
+
+    return res.redirect(link);
+  } catch (err) {
+    console.error(err);
+    return res.sendStatus(STATUS_CODE.SERVER_ERROR);
+  }
+}
