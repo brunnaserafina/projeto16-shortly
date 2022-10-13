@@ -76,3 +76,30 @@ export async function redirectLink(req, res) {
     return res.sendStatus(STATUS_CODE.SERVER_ERROR);
   }
 }
+
+export async function deleteLink(req, res) {
+  const { id } = req.params;
+  const { idUser } = res.locals;
+
+  try {
+    const existingIdLink = (
+      await connection.query(`SELECT * FROM links WHERE id=$1;`, [id])
+    ).rows[0];
+
+    if (!existingIdLink) {
+      return res.sendStatus(STATUS_CODE.NOT_FOUND);
+    }
+
+    if (existingIdLink.user_id !== idUser) {
+      return res.sendStatus(STATUS_CODE.UNAUTHORIZED);
+    }
+
+    await connection.query(`DELETE FROM views WHERE "link_id"=$1;`, [id]);
+    await connection.query(`DELETE FROM links WHERE id=$1;`, [id]);
+
+    return res.sendStatus(STATUS_CODE.NO_CONTENT);
+  } catch (err) {
+    console.error(err);
+    return res.sendStatus(STATUS_CODE.SERVER_ERROR);
+  }
+}
