@@ -1,39 +1,31 @@
-import signUpSchema from "../schemas/signUpSchema.js";
-import signInSchema from "../schemas/signInSchema.js";
 import { STATUS_CODE } from "../enums/statusCode.js";
+import connection from "../databases/pgsql.js";
 
-export async function signUpValidate(req, res, next) {
-  const { name, email, password, confirmPassword } = req.body;
+export async function tokenValidate(req, res, next) {
+  const token = req.headers.authorization?.replace("Bearer ", "");
+  let existingToken;
+  let idUser;
 
-  const validate = signUpSchema.validate(
-    { name, email, password, confirmPassword },
-    { abortEarly: false }
-  );
+  try {
+    if (token) {
+      existingToken = (
+        await connection.query(`SELECT * FROM sessions WHERE token=$1;`, [
+          token,
+        ])
+      ).rows[0];
+    }
 
-  if (validate.error) {
-    const err = validate.error.details.map((detail) => detail.message);
-    return res.status(STATUS_CODE.UNPROCESSABLE_ENTITY).send({ message: err });
+    if (!token || !existingToken) {
+      return res.sendStatus(STATUS_CODE.UNAUTHORIZED);
+    }
+
+    idUser = existingToken.user_id;
+
+    res.locals = { idUser };
+
+    next();
+  } catch (err) {
+    console.error(err);
+    return res.sendStatus(STATUS_CODE.SERVER_ERROR);
   }
-
-  res.locals = { name, email, password };
-
-  next();
-}
-
-export async function signInValidate(req, res, next) {
-  const { email, password } = req.body;
-
-  const validate = signInSchema.validate(
-    { email, password },
-    { abortEarly: false }
-  );
-
-  if (validate.error) {
-    const err = validate.error.details.map((detail) => detail.message);
-    return res.status(STATUS_CODE.UNPROCESSABLE_ENTITY).send({ message: err });
-  }
-
-  res.locals = { email, password };
-
-  next();
 }

@@ -54,7 +54,7 @@ export async function signIn(req, res) {
     token = uuid();
 
     await connection.query(
-      `INSERT INTO sessions ("users_id", token) VALUES ($1, $2);`,
+      `INSERT INTO sessions ("user_id", token) VALUES ($1, $2);`,
       [user.id, token]
     );
 
