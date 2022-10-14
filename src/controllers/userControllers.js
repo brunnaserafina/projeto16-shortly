@@ -56,3 +56,38 @@ export async function getUser(req, res) {
     return res.sendStatus(STATUS_CODE.SERVER_ERROR);
   }
 }
+
+export async function getRanking(req, res) {
+  try {
+    const ranking = (
+      await connection.query(`
+        SELECT 
+            users.id, users.name, l."linksCount", COALESCE(v."visitsCount", 0) AS "visitsCount"
+        FROM users
+        LEFT JOIN
+        (SELECT 
+            users.id, users.name, COUNT(links.id) AS "linksCount"
+        FROM links
+        LEFT JOIN users
+            ON links."user_id" = users.id
+        GROUP BY users.id) l
+            ON users.id = l.id
+        LEFT JOIN
+        (SELECT 
+            users.id, users.name, COUNT(views.id) AS "visitsCount"
+        FROM views
+        LEFT JOIN users
+            ON users.id = views."from_user_id"
+        GROUP BY users.id) v
+        ON users.id = v.id
+        ORDER BY v."visitsCount" DESC NULLS LAST, l."linksCount" DESC
+        LIMIT 10;
+    `)
+    ).rows;
+
+    return res.status(STATUS_CODE.OK).send(ranking);
+  } catch (err) {
+    console.error(err);
+    return res.sendStatus(STATUS_CODE.SERVER_ERROR);
+  }
+}

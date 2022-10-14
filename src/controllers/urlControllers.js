@@ -49,6 +49,7 @@ export async function redirectLink(req, res) {
   const { shortUrl } = req.params;
 
   let idUrl;
+  let idUser;
   let link;
 
   try {
@@ -63,8 +64,12 @@ export async function redirectLink(req, res) {
     }
 
     idUrl = existingShortUrl.id;
+    idUser = existingShortUrl.user_id;
 
-    await connection.query(`INSERT INTO views ("link_id") VALUES ($1);`, [idUrl]);
+    await connection.query(
+      `INSERT INTO views ("link_id", "from_user_id") VALUES ($1,$2);`,
+      [idUrl, idUser]
+    );
 
     link = existingShortUrl.link_url;
 
