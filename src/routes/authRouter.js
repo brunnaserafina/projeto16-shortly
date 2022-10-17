@@ -8,9 +8,6 @@ import {
 
 const router = express.Router();
 
-router.get("/status", (req, res) => {
-  res.sendStatus(200);
-});
 router.post("/sign-up", signUpValidate, signUp);
 router.post("/sign-in", signInValidate, signIn);
 

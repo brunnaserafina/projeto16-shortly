@@ -16,7 +16,7 @@ export async function getUser(req, res) {
     const visitCountTotal = (
       await connection.query(
         `
-            SELECT SUM("visit_count") 
+            SELECT COUNT("visit_count") 
             FROM views 
             JOIN links 
                 ON views."link_id" = links.id 
@@ -33,7 +33,7 @@ export async function getUser(req, res) {
                 links.id, 
                 links.short_url AS "shortUrl", 
                 links.link_url AS "url", 
-                SUM("visit_count") AS "visitCount"
+                COUNT("visit_count") AS "visitCount"
             FROM views
             JOIN links
                 ON views."link_id" = links.id
@@ -42,11 +42,11 @@ export async function getUser(req, res) {
         `,
       [idUser]
     );
-
+  
     const infoUser = {
       id: idUser,
       name: user.name,
-      visitCount: visitCountTotal.sum,
+      visitCount: visitCountTotal ? visitCountTotal.count : 0,
       shortenedUrls: shortened.rows,
     };
 
