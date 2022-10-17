@@ -34,15 +34,15 @@ export async function getUser(req, res) {
                 links.short_url AS "shortUrl", 
                 links.link_url AS "url", 
                 COUNT("visit_count") AS "visitCount"
-            FROM views
-            JOIN links
+            FROM links
+            LEFT JOIN views
                 ON views."link_id" = links.id
             WHERE links."user_id"=($1)
             GROUP BY links.id;
         `,
       [idUser]
     );
-  
+
     const infoUser = {
       id: idUser,
       name: user.name,
