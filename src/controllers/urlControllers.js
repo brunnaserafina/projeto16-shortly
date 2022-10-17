@@ -71,7 +71,7 @@ export async function redirectLink(req, res) {
     ]);
 
     link = existingShortUrl.link_url;
-    console.log(link);
+
     return res.redirect(link);
   } catch (err) {
     console.error(err);

@@ -5,7 +5,7 @@ const regex = new RegExp(
 );
 
 const urlSchema = joi.object({
-  url: joi.string().pattern(regex).required(),
+  url: joi.string().uri().pattern(regex).required(),
 });
 
 export default urlSchema;

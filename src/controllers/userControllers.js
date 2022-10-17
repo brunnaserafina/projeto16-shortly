@@ -42,7 +42,7 @@ export async function getUser(req, res) {
         `,
       [idUser]
     );
-
+  
     const infoUser = {
       id: idUser,
       name: user.name,
