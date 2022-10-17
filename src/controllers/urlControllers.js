@@ -59,20 +59,19 @@ export async function redirectLink(req, res) {
       ])
     ).rows[0];
 
-    if (!existingShortUrl) {
+    if (existingShortUrl === undefined) {
       return res.sendStatus(STATUS_CODE.NOT_FOUND);
     }
 
     idUrl = existingShortUrl.id;
     idUser = existingShortUrl.user_id;
 
-    await connection.query(
-      `INSERT INTO views ("link_id", "from_user_id") VALUES ($1,$2);`,
-      [idUrl, idUser]
-    );
+    await connection.query(`INSERT INTO views ("link_id") VALUES ($1);`, [
+      idUrl,
+    ]);
 
     link = existingShortUrl.link_url;
-
+    console.log(link);
     return res.redirect(link);
   } catch (err) {
     console.error(err);

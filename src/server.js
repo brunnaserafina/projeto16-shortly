@@ -13,8 +13,6 @@ const server = express();
 server.use(cors());
 server.use(express.json());
 
-server.get("/status", (req, res) => res.send("Ok!"));
-
 server.use(authRouter);
 server.use(urlRouter);
 server.use(userRouter);

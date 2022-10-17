@@ -32,7 +32,7 @@ export async function getUser(req, res) {
             SELECT 
                 links.id, 
                 links.short_url AS "shortUrl", 
-                links.link_url AS "linkUrl", 
+                links.link_url AS "url", 
                 SUM("visit_count") AS "visitCount"
             FROM views
             JOIN links
@@ -62,25 +62,25 @@ export async function getRanking(req, res) {
     const ranking = (
       await connection.query(`
         SELECT 
-            users.id, users.name, l."linksCount", COALESCE(v."visitsCount", 0) AS "visitsCount"
+            users.id, users.name, COALESCE(l."linksCount", 0) AS "linksCount", COALESCE(v."visitCount", 0) AS "visitCount"
         FROM users
         LEFT JOIN
         (SELECT 
             users.id, users.name, COUNT(links.id) AS "linksCount"
         FROM links
-        LEFT JOIN users
+        JOIN users
             ON links."user_id" = users.id
         GROUP BY users.id) l
             ON users.id = l.id
         LEFT JOIN
         (SELECT 
-            users.id, users.name, COUNT(views.id) AS "visitsCount"
+            links."user_id", COUNT(views.id) AS "visitCount"
         FROM views
-        LEFT JOIN users
-            ON users.id = views."from_user_id"
-        GROUP BY users.id) v
-        ON users.id = v.id
-        ORDER BY v."visitsCount" DESC NULLS LAST, l."linksCount" DESC
+        JOIN links
+            ON views."link_id" = links.id
+        GROUP BY links."user_id") v
+        ON users.id = v."user_id"
+        ORDER BY v."visitCount" DESC NULLS LAST, l."linksCount" DESC NULLS LAST
         LIMIT 10;
     `)
     ).rows;
